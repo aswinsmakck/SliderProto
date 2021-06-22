@@ -1,13 +1,13 @@
-var WDSlider = function(){
+var WDSlider = function(slideContainer){
   this.isPressed = false;
   this.startX = 0;
   this.lastX = 0;
   this.movedPercent = 0;
-  this.sliderContainer = null;
+  this.sliderContainer = slideContainer;
 
-  var createDots = function (slider) {
+  this.createDots = function (slider) {
     var dotContainer = slider.querySelector('.WD-dots');
-    dotContainer.addEventListener('click', dotClickHandler);
+    dotContainer.addEventListener('click', this.dotClickHandler.bind(this));
 
     var slides = slider.querySelectorAll('.WD-slider-component');
     slides.forEach(function (_, i) {
@@ -19,7 +19,7 @@ var WDSlider = function(){
   };
 
 
-  var createSlideNavButtons = function (slider) {
+  this.createSlideNavButtons = function (slider) {
       slider.insertAdjacentHTML(
           'beforeend',
           "<button class='WD-slider-btn WD-slider-btn-left'>&larr;</button>"
@@ -31,33 +31,26 @@ var WDSlider = function(){
     var LeftButton = slider.querySelector('.WD-slider-btn-left');
     var RightButton = slider.querySelector('.WD-slider-btn-right');
 
-    RightButton.addEventListener('click', nextSlide);
-    LeftButton.addEventListener('click', prevSlide);
+    RightButton.addEventListener('click', this.nextSlide.bind(this));
+    LeftButton.addEventListener('click', this.prevSlide.bind(this));
   };
 
 
-  var initializeObjectsForSlider = function(evt){
-    var slider = evt.currentTarget;
-    var slides = slider.querySelectorAll('.WD-slider-component');
-    curSlide = evt.target.dataset.curSlide
-  };
-
-
-  var dotClickHandler = function (e) {
+  this.dotClickHandler = function (e) {
     if (e.target.classList.contains('WD-dot')) {
       var slide = e.target.dataset.slide;
       //console.log("dot click handler", slide)
-      goToSlide(slide,e.target);
-      activateDot(slide,e.target);
-      updateCurSlideState(slide,e);
+      this.goToSlide(slide,e.target);
+      this.activateDot(slide,e.target);
+      this.updateCurSlideState(slide,e);
     }
   };
 
-  var updateCurSlideState = function(SlideCount,evt){
+  this.updateCurSlideState = function(SlideCount,evt){
     evt.target.closest(".WD-slider-container").dataset.curSlide = SlideCount;
   };
 
-  var slideMouseDownHandler = function(evt){
+  this.slideMouseDownHandler = function(evt){
       evt.preventDefault();
 
       var selectedSlideContainer_Slides = evt.currentTarget.querySelectorAll(".WD-slider-component");
@@ -73,7 +66,7 @@ var WDSlider = function(){
       this.startX = evt.offsetX;
   };
 
-  var slideMouseMoveHandler = function(evt){
+  this.slideMouseMoveHandler = function(evt){
       evt.preventDefault();
       if(!this.isPressed) return;
       
@@ -91,7 +84,7 @@ var WDSlider = function(){
       },this);
   };
 
-  var slideMouseUpHandler = function(evt){
+  this.slideMouseUpHandler = function(evt){
       if(!this.isPressed) return;
       
       if(evt.target.classList.contains("WD-slider-btn") || 
@@ -99,19 +92,19 @@ var WDSlider = function(){
       evt.target.classList.contains("WD-dots")) return;
       
       if(this.movedPercent > 5){
-        nextSlide(evt);
+        this.nextSlide(evt);
       }
       else if(this.movedPercent < -5){
-        prevSlide(evt);
+        this.prevSlide(evt);
       }
       else{
-          goToSlide(this.sliderContainer.dataset.curSlide,evt.currentTarget)
+        this.goToSlide(this.sliderContainer.dataset.curSlide,evt.currentTarget)
       }
       this.movedPercent = 0;
       this.isPressed = false;
   }
 
-  var activateDot = function (slide,sliderContainerId) {
+  this.activateDot = function (slide,sliderContainerId) {
     var slider = sliderContainerId.closest(".WD-slider-container")
     if(typeof slider != undefined){
       slider.querySelectorAll('.WD-dot').forEach(function(dot){
@@ -121,7 +114,7 @@ var WDSlider = function(){
     }
   };
 
-  var goToSlide = function (slide,sliderContainerId) {
+  this.goToSlide = function (slide,sliderContainerId) {
     
     var slides = sliderContainerId.closest(".WD-slider-container").querySelectorAll(".WD-slider-component")
     slides.forEach(function(s, i){
@@ -130,7 +123,7 @@ var WDSlider = function(){
   };
 
 // Next slide
-  var nextSlide = function (evt) {
+  this.nextSlide = function (evt) {
     
       var selectedSlideContainer_CurSlide = parseInt(evt.target.closest(".WD-slider-container").dataset.curSlide);
       if (selectedSlideContainer_CurSlide === evt.target.closest(".WD-slider-container").querySelectorAll(".WD-slider-component").length - 1) {
@@ -139,43 +132,42 @@ var WDSlider = function(){
       else {
         selectedSlideContainer_CurSlide += 1;
       }
-      goToSlide(selectedSlideContainer_CurSlide,evt.target);
-      activateDot(selectedSlideContainer_CurSlide,evt.target);
-      updateCurSlideState(selectedSlideContainer_CurSlide,evt);
+      this.goToSlide(selectedSlideContainer_CurSlide,evt.target);
+      this.activateDot(selectedSlideContainer_CurSlide,evt.target);
+      this.updateCurSlideState(selectedSlideContainer_CurSlide,evt);
   };
 
-  var prevSlide = function (evt) {
+  this.prevSlide = function (evt) {
       var selectedSlideContainer_CurSlide = parseInt(evt.target.closest(".WD-slider-container").dataset.curSlide);
       if (selectedSlideContainer_CurSlide === 0) {
         selectedSlideContainer_CurSlide = evt.target.closest(".WD-slider-container").querySelectorAll(".WD-slider-component").length - 1;
       } else {
         selectedSlideContainer_CurSlide -= 1;
       }
-      goToSlide(selectedSlideContainer_CurSlide,evt.target);
-      activateDot(selectedSlideContainer_CurSlide,evt.target);
-      updateCurSlideState(selectedSlideContainer_CurSlide,evt);
+      this.goToSlide(selectedSlideContainer_CurSlide,evt.target);
+      this.activateDot(selectedSlideContainer_CurSlide,evt.target);
+      this.updateCurSlideState(selectedSlideContainer_CurSlide,evt);
   };
 
-   WDSlider.prototype.init = function (sliderContainer) {
+   WDSlider.prototype.init = function () {
      
-    this.sliderContainer = sliderContainer;
     var curSlide = 0;
-    if(!sliderContainer.classList.contains("WD-slider-container")) return;
+    if(!this.sliderContainer.classList.contains("WD-slider-container")) return;
 
     this.sliderContainer.dataset.curSlide = curSlide;
 
-    this.sliderContainer.addEventListener("mousedown", slideMouseDownHandler.bind(this));
-    this.sliderContainer.addEventListener("mousemove", slideMouseMoveHandler.bind(this));
-    this.sliderContainer.addEventListener("mouseup", slideMouseUpHandler.bind(this));
-    this.sliderContainer.addEventListener("mouseleave", slideMouseUpHandler.bind(this));
+    this.sliderContainer.addEventListener("mousedown", this.slideMouseDownHandler.bind(this));
+    this.sliderContainer.addEventListener("mousemove", this.slideMouseMoveHandler.bind(this));
+    this.sliderContainer.addEventListener("mouseup", this.slideMouseUpHandler.bind(this));
+    this.sliderContainer.addEventListener("mouseleave", this.slideMouseUpHandler.bind(this));
 
-    goToSlide(curSlide,sliderContainer);
+    this.goToSlide(curSlide,this.sliderContainer);
 
-    createSlideNavButtons(sliderContainer);
+    this.createSlideNavButtons(this.sliderContainer);
 
-    createDots(sliderContainer);
+    this.createDots(this.sliderContainer);
     //activateDot = activateDot.bind(this)
-    activateDot(curSlide,sliderContainer)
+    this.activateDot(curSlide,this.sliderContainer)
 
   };
 
@@ -185,7 +177,7 @@ window.addEventListener("DOMContentLoaded",function(evt){
   var WDSliderObj;
 
   document.querySelectorAll(".WD-slider-container").forEach(function(slideContainer){
-    WDSliderObj = new WDSlider();
-    WDSliderObj.init(slideContainer);
+    WDSliderObj = new WDSlider(slideContainer);
+    WDSliderObj.init();
   });
 });
